@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Covid 19 Data Extractor</title>
+</head>
+<body>
+
+    {% extends "template.html" %}
+
+    {% block content %}
+
+    <h1>Select State</h1>
+    <form action="" method="POST">
+        <select name="state" id="state">
+            <option value="Gujarat">Gujarat</option>
+            <option value="Gujarat">Rajasthan</option>
+            <option value="Gujarat">Maharashtra</option>
+            <option value="Gujarat">Madhya Pradesh</option>
+        </select>
+        <input type="submit" name="submit" id="submit">
+    </form>
+
+    {% endblock %}
+</body>
+</html>

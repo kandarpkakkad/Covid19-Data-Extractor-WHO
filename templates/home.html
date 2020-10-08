@@ -10,17 +10,18 @@
 
     {% block content %}
 
-    <h1>Select State</h1>
-    <form action="" method="POST">
-        <select name="state" id="state">
-            <option value="Gujarat">Gujarat</option>
-            <option value="Gujarat">Rajasthan</option>
-            <option value="Gujarat">Maharashtra</option>
-            <option value="Gujarat">Madhya Pradesh</option>
-        </select>
-        <input type="submit" name="submit" id="submit">
-    </form>
-
+    <div class="jumbotron container">
+        <h1 class="text-center">Select State</h1>
+        <br><br>
+        <div class="container text-center">
+            <form action="" method="POST">
+                <label for="state">State: </label>
+                <input type="text" name="state" id="state">
+                <br><br>
+                <input class="btn-upload" type="submit" name="submit" id="submit">
+            </form>
+        </div>
+    </div>
     {% endblock %}
 </body>
 </html>

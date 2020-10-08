@@ -16,7 +16,7 @@ def extract(state: str) -> (pd.DataFrame, list):
         raise
     print("Reading Data for {}".format(state))
     # Read CSV file from covid19india API
-    data_districts = pd.DataFrame(pd.read_csv("districts.csv", header=None, usecols=[0, 1, 2, 3, 4, 5, 7]))
+    data_districts = pd.DataFrame(pd.read_csv("https://api.covid19india.org/csv/latest/districts.csv", header=None, usecols=[0, 1, 2, 3, 4, 5, 7]))
     # Get data of respective state
     data_districts_state = data_districts.loc[(data_districts[1] == state)]
     districts = data_districts_state[2].unique()

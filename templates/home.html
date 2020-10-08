@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <title>Covid 19 Data Extractor</title>
 </head>
-
 <body>
 
     {% extends "template.html" %}
@@ -17,8 +15,11 @@
         <br><br>
         <div class="container text-center">
             <form action="" method="POST">
-                <label for="state">State: </label>
-                <input type="text" name="state" id="state">
+                <select name="state" id="state">
+                    {% for state in data %}
+                        <option value="{{ state }}">{{ state }}</option>
+                    {% endfor %}
+                </select>
                 <br><br>
                 <input class="btn-upload" type="submit" name="submit" id="submit">
             </form>
@@ -26,5 +27,4 @@
     </div>
     {% endblock %}
 </body>
-
 </html>

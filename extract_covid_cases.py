@@ -18,15 +18,13 @@ def extract(state: str) -> (pd.DataFrame, list):
     unknowns = {"Andaman and Nicobar Islands", "Assam", "Goa", "Manipur", "Sikkim", "Telangana"}
     # Read CSV file from covid19india API
     if state in unknowns:
-        data_districts = pd.read_csv("https://api.covid19india.org/csv/latest/districts.csv", header=None,
-                                     usecols=[0, 1, 3, 4, 5, 7])
+        data_districts = pd.read_csv("https://api.covid19india.org/csv/latest/districts.csv", header=None, usecols=[0, 1, 3, 4, 5, 7], low_memory=False)
     else:
-        data_districts = pd.read_csv("https://api.covid19india.org/csv/latest/districts.csv", header=None,
-                                     usecols=[0, 1, 2, 3, 4, 5, 7])
+        data_districts = pd.read_csv("https://api.covid19india.org/csv/latest/districts.csv", header=None, usecols=[0, 1, 2, 3, 4, 5, 7], low_memory=False)
     # Get data of respective state
     data_districts_state = data_districts.loc[(data_districts[1] == state)]
     districts = []
     if state not in unknowns:
-    	districts = data_districts_state[2].unique()
-    print(data_districts_state, districts)
+        districts = data_districts_state[2].unique()
+    districts.sort()
     return data_districts_state, districts

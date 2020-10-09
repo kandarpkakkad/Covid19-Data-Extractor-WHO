@@ -14,7 +14,7 @@ def extract(state: str) -> (pd.DataFrame, list):
     except AssertionError as _:
         print("String Needed")
         raise
-    print("Reading Data for {}".format(state))
+    print("Reading Data for districts of {}".format(state))
     unknowns = {"Andaman and Nicobar Islands", "Assam", "Goa", "Manipur", "Sikkim", "Telangana"}
     # Read CSV file from covid19india API
     if state in unknowns:
@@ -28,3 +28,22 @@ def extract(state: str) -> (pd.DataFrame, list):
         districts = data_districts_state[2].unique()
     districts.sort()
     return data_districts_state, districts
+
+
+def extract_state_data(state: str) -> pd.DataFrame:
+    """
+        :param state: Name of the state for extraction of the data for the state
+
+        Getting data of respective state date wise.
+
+        :return: Dataframe of data of respective state
+        """
+    try:
+        assert isinstance(state, str)
+    except AssertionError as _:
+        print("String Needed")
+        raise
+    print("Reading Data for {}".format(state))
+    unknowns = {"Andaman and Nicobar Islands", "Assam", "Goa", "Manipur", "Sikkim", "Telangana"}
+    data = pd.read_csv("https://api.covid19india.org/csv/latest/states.csv", header=None, usecols=[0, 1, 2, 3, 4, 6], low_memory=False)
+    return data

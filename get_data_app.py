@@ -139,7 +139,7 @@ def home():
                         new_sheet.write(row, 10, str(district_data.iloc[i, 6]), text_wrap)
                     row += 1
         workbook.close()
-        return send_from_directory(directory="/home/kandarp/PycharmProjects/Covid19Project", filename=request.form['state'][:31] + ".xlsx", as_attachment=True)
+        return send_from_directory(directory="", filename=request.form['state'][:31] + ".xlsx", as_attachment=True)
         # return redirect("/", code=302)
 
 

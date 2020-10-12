@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>About</title>
+</head>
+<body>
+
+    {% extends "template.html" %}
+
+    {% block content %}
+
+    <div class="jumbotron container align-middle">
+        <h1 class="text-center text-dark">About</h1>
+        <br><br>
+        <div class="container">
+            <p class="font-large">
+                This is a personal project to help WHO employees to get data automatically. You need to select the state from the dropdown and click on submit. You will get an excel sheet for downloading and that will contain the data of the state selected and all the districts, if any, in that state in different sheets in the file.
+            </p>
+            <p class="font-large">
+                The data is extracted from <a href="https://www.covid19india.org">https://www.covid19india.org</a>. This website has its own API, <a href="https://api.covid19india.org">https://api.covid19india.org</a>. The API contains state-wise, district-wise and whole country's COVID19 data with dates. The excel sheet is generated using this data.
+            </p>
+        </div>
+    </div>
+
+    {% endblock %}
+
+</body>
+</html>

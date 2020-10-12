@@ -1,19 +1,116 @@
 from flask import Flask, render_template, request, send_from_directory
 import xlsxwriter as xl
-from extract_covid_cases import extract, extract_state_data
+import pandas as pd
 
 
+# States and UTs
+states = [
+    'Andaman and Nicobar Islands',
+    'Andhra Pradesh',
+    'Arunachal Pradesh',
+    'Assam',
+    'Bihar',
+    'Chandigarh',
+    'Chhattisgarh',
+    'Dadra and Nagar Haveli and Daman and Diu',
+    'Delhi',
+    'Goa',
+    'Gujarat',
+    'Haryana',
+    'Himachal Pradesh',
+    'Jammu and Kashmir',
+    'Jharkhand', 'Karnataka',
+    'Kerala',
+    'Ladakh',
+    'Madhya Pradesh',
+    'Maharashtra',
+    'Manipur',
+    'Meghalaya',
+    'Mizoram',
+    'Nagaland',
+    'Odisha',
+    'Puducherry',
+    'Punjab',
+    'Rajasthan',
+    'Sikkim',
+    'Tamil Nadu',
+    'Telangana',
+    'Tripura',
+    'Uttar Pradesh',
+    'Uttarakhand',
+    'West Bengal'
+]
+# States or UTs which does not have districts
+unknowns = [
+    "Andaman and Nicobar Islands",
+    "Assam",
+    "Goa",
+    "Manipur",
+    "Sikkim",
+    "Telangana"
+]
+
+
+# Create Utility Functions
+def extract(state: str) -> (pd.DataFrame, list):
+    """
+    :param state: Name of the state for extraction of the data for the state
+
+    Getting data of respective state and its districts date wise.
+
+    :return: Dataframe of data of respective state
+    """
+    global unknowns
+    try:
+        assert isinstance(state, str)
+    except AssertionError as _:
+        print("String Needed")
+        raise
+    print("Reading Data for districts of {}".format(state))
+    # Read CSV file from covid19india API
+    if state in unknowns:
+        data_districts = pd.read_csv("https://api.covid19india.org/csv/latest/districts.csv", header=None, usecols=[0, 1, 3, 4, 5, 7], low_memory=False)
+    else:
+        data_districts = pd.read_csv("https://api.covid19india.org/csv/latest/districts.csv", header=None, usecols=[0, 1, 2, 3, 4, 5, 7], low_memory=False)
+    # Get data of respective state
+    data_districts_state = data_districts.loc[(data_districts[1] == state)]
+    districts = []
+    if state not in unknowns:
+        districts = data_districts_state[2].unique()
+    districts.sort()
+    return data_districts_state, districts
+
+
+def extract_state_data(state: str) -> pd.DataFrame:
+    """
+        :param state: Name of the state for extraction of the data for the state
+
+        Getting data of respective state date wise.
+
+        :return: Dataframe of data of respective state
+        """
+    try:
+        assert isinstance(state, str)
+    except AssertionError as _:
+        print("String Needed")
+        raise
+    print("Reading Data for {}".format(state))
+    data = pd.read_csv("https://api.covid19india.org/csv/latest/states.csv", header=None, usecols=[0, 1, 2, 3, 4, 6], low_memory=False)
+    return data
+
+
+# Create Flask App
 app = Flask(__name__)
 
 
-states = ['Andaman and Nicobar Islands', 'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chandigarh', 'Chhattisgarh', 'Dadra and Nagar Haveli and Daman and Diu', 'Delhi', 'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jammu and Kashmir', 'Jharkhand', 'Karnataka', 'Kerala', 'Ladakh', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Puducherry', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal']
-unknowns = {"Andaman and Nicobar Islands", "Assam", "Goa", "Manipur", "Sikkim", "Telangana"}
-
-
+# Route 1 --> Home Route
 @app.route('/', methods=['GET', 'POST'])
 def home():
     global states, unknowns
     if request.method == "GET":
+        # for filename in os.listdir(os.path.dirname(os.path.realpath(__file__))):
+        #     if filename.endswith(".xlsx"):
+        #         os.remove(filename)
         return render_template("home.html", data=states)
     else:
         workbook = xl.Workbook(str(request.form['state'])[:31] + ".xlsx")
@@ -140,8 +237,22 @@ def home():
                     row += 1
         workbook.close()
         return send_from_directory(directory="", filename=request.form['state'][:31] + ".xlsx", as_attachment=True)
-        # return redirect("/", code=302)
+
+
+@app.route("/about", methods=['GET'])
+def about():
+    return render_template("about.html")
+
+
+@app.route("/contact", methods=['GET'])
+def contact():
+    return render_template("contact.html")
+
+
+@app.errorhandler(404)
+def not_found(e):
+    return render_template("404.html")
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port='8080')
+    app.run(debug=True)

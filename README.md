@@ -120,3 +120,27 @@ We have a common template that is used by all the pages.
 </body>
 </html>
 ```
+
+## Run on local machine
+
+Clone the github repository on local machine
+
+```
+git clone https://github.com/kandarpkakkad/Covid19-Data-Extractor-WHO.git
+cd Covid19-Data-Extractor-WHO
+```
+
+Install the requirements
+
+```
+pip3 install -r requirements.txt
+```
+
+Run the flask app
+
+```
+python3 run extract_covid_data.py
+```
+
+## Output
+

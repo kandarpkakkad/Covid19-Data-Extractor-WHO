@@ -144,3 +144,14 @@ python3 run extract_covid_data.py
 
 ## Output
 
+#### Home Page
+
+![Home](images/home.png)
+
+#### About Page
+
+![About](images/about.png)
+
+#### Contact Page
+
+![Contact](images/contact.png)

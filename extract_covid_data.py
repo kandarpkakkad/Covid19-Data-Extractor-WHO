@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, send_from_directory
 import xlsxwriter as xl
 import pandas as pd
+from apscheduler.schedulers.background import BackgroundScheduler
 
 
 # States and UTs
@@ -99,26 +100,22 @@ def extract_state_data(state: str) -> pd.DataFrame:
     return data
 
 
-# Create Flask App
-app = Flask(__name__)
+schedule = BackgroundScheduler()
 
 
-# Route 1 --> Home Route
-@app.route('/', methods=['GET', 'POST'])
-def home():
-    global states, unknowns
-    if request.method == "GET":
-        # for filename in os.listdir(os.path.dirname(os.path.realpath(__file__))):
-        #     if filename.endswith(".xlsx"):
-        #         os.remove(filename)
-        return render_template("home.html", data=states)
-    else:
-        workbook = xl.Workbook(str(request.form['state'])[:31] + ".xlsx")
+def update_data() -> None:
+    """
+    This function will run everyday at midnight and update the data.
+
+    :return: None
+    """
+    for state in states:
+        workbook = xl.Workbook(state[:31] + ".xlsx")
         bold = workbook.add_format({'bold': True, 'font_size': 16})
         text_wrap = workbook.add_format({'text_wrap': True, 'font_size': 13})
-        state_sheet = workbook.add_worksheet(str(request.form['state'][:31]))
+        state_sheet = workbook.add_worksheet(state[:31])
         state_sheet.set_column(0, 0, 15)
-        state_sheet.set_column(1, 1, len(request.form['state']) + 5)
+        state_sheet.set_column(1, 1, len(state) + 5)
         state_sheet.set_column(2, 9, len("Total Confirmed") + 8)
         state_sheet.write(0, 0, "Date", bold)
         state_sheet.write(0, 1, "State", bold)
@@ -130,8 +127,8 @@ def home():
         state_sheet.write(0, 7, "Total Recovered", bold)
         state_sheet.write(0, 8, "Total Deceased", bold)
         state_sheet.write(0, 9, "Total Tested", bold)
-        state_data = extract_state_data(request.form['state'])
-        state_data = state_data.loc[(state_data[1] == request.form['state'])]
+        state_data = extract_state_data(state)
+        state_data = state_data.loc[(state_data[1] == state)]
         state_row = 1
         for i in range(len(state_data)):
             state_sheet.write(state_row, 0, state_data.iloc[i, 0], text_wrap)
@@ -171,8 +168,8 @@ def home():
             if str(state_data.iloc[i, 5]) != "nan":
                 state_sheet.write(state_row, 9, str(state_data.iloc[i, 5]), text_wrap)
             state_row += 1
-        if request.form['state'] not in unknowns:
-            data, districts = extract(request.form['state'])
+        if state not in unknowns:
+            data, districts = extract(state)
             for district in districts:
                 worksheets = workbook.get_worksheet_by_name(district[:31])
                 if worksheets is None:
@@ -180,7 +177,7 @@ def home():
                 else:
                     new_sheet = workbook.add_worksheet(district[:30] + "_dist")
                 new_sheet.set_column(0, 0, 15)
-                new_sheet.set_column(1, 1, len(request.form['state']) + 5)
+                new_sheet.set_column(1, 1, len(state) + 5)
                 new_sheet.set_column(2, 2, len(district) + 5)
                 new_sheet.set_column(3, 10, len("Total Confirmed") + 8)
                 new_sheet.write(0, 0, "Date", bold)
@@ -236,6 +233,23 @@ def home():
                         new_sheet.write(row, 10, str(district_data.iloc[i, 6]), text_wrap)
                     row += 1
         workbook.close()
+
+
+schedule.add_job(update_data, trigger="cron", day_of_week='mon-sun', hour=1, minute=26)
+schedule.start()
+
+
+# Create Flask App
+app = Flask(__name__)
+
+
+# Route 1 --> Home Route
+@app.route('/', methods=['GET', 'POST'])
+def home():
+    global states, unknowns
+    if request.method == "GET":
+        return render_template("home.html", data=states)
+    else:
         return send_from_directory(directory="", filename=request.form['state'][:31] + ".xlsx", as_attachment=True)
 
 
@@ -256,3 +270,5 @@ def not_found(e):
 
 if __name__ == "__main__":
     app.run(debug=True)
+else:
+    schedule.shutdown()

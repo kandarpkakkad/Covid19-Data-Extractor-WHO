@@ -139,7 +139,7 @@ pip3 install -r requirements.txt
 Run the flask app
 
 ```
-python3 run extract_covid_data.py
+python3 extract_covid_data.py
 ```
 
 ## Output

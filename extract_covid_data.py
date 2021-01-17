@@ -1,3 +1,15 @@
+"""
+Covid-19 Data Extractor.
+
+This is a personal project to help people to get data automatically. You need to select the state from the dropdown and
+click on submit. You will get an excel sheet for downloading and that will contain the data of the state selected and
+all the districts, if any, in that state in different sheets in the file.
+
+The data is extracted from https://www.covid19india.org. This website has its own API, https://api.covid19india.org.
+The API contains state-wise, district-wise and whole country's COVID19 data with dates. The excel sheet is generated
+using this data.
+"""
+
 from flask import Flask, render_template, request, send_from_directory
 import xlsxwriter as xl
 import pandas as pd
@@ -55,6 +67,8 @@ unknowns = [
 # Create Utility Functions
 def extract(state: str) -> (pd.DataFrame, list):
     """
+    Extractor utility.
+
     :param state: Name of the state for extraction of the data for the state
 
     Getting data of respective state and its districts date wise.
@@ -70,9 +84,11 @@ def extract(state: str) -> (pd.DataFrame, list):
     print("Reading Data for districts of {}".format(state))
     # Read CSV file from covid19india API
     if state in unknowns:
-        data_districts = pd.read_csv("https://api.covid19india.org/csv/latest/districts.csv", header=None, usecols=[0, 1, 3, 4, 5, 7], low_memory=False)
+        data_districts = pd.read_csv("https://api.covid19india.org/csv/latest/districts.csv", header=None,
+                                     usecols=[0, 1, 3, 4, 5, 7], low_memory=False)
     else:
-        data_districts = pd.read_csv("https://api.covid19india.org/csv/latest/districts.csv", header=None, usecols=[0, 1, 2, 3, 4, 5, 7], low_memory=False)
+        data_districts = pd.read_csv("https://api.covid19india.org/csv/latest/districts.csv", header=None,
+                                     usecols=[0, 1, 2, 3, 4, 5, 7], low_memory=False)
     # Get data of respective state
     data_districts_state = data_districts.loc[(data_districts[1] == state)]
     districts = []
@@ -84,19 +100,22 @@ def extract(state: str) -> (pd.DataFrame, list):
 
 def extract_state_data(state: str) -> pd.DataFrame:
     """
-        :param state: Name of the state for extraction of the data for the state
+    State data utility.
 
-        Getting data of respective state date wise.
+    :param state: Name of the state for extraction of the data for the state
 
-        :return: Dataframe of data of respective state
-        """
+    Getting data of respective state date wise.
+
+    :return: Dataframe of data of respective state
+    """
     try:
         assert isinstance(state, str)
     except AssertionError as _:
         print("String Needed")
         raise
     print("Reading Data for {}".format(state))
-    data = pd.read_csv("https://api.covid19india.org/csv/latest/states.csv", header=None, usecols=[0, 1, 2, 3, 4, 6], low_memory=False)
+    data = pd.read_csv("https://api.covid19india.org/csv/latest/states.csv", header=None, usecols=[0, 1, 2, 3, 4, 6],
+                       low_memory=False)
     return data
 
 
@@ -105,10 +124,13 @@ schedule = BackgroundScheduler()
 
 def update_data() -> None:
     """
+    Update data utility.
+
     This function will run everyday at midnight and update the data.
 
     :return: None
     """
+    print("[X] Data Retrieval Started...")
     for state in states:
         workbook = xl.Workbook(state[:31] + ".xlsx")
         bold = workbook.add_format({'bold': True, 'font_size': 16})
@@ -135,19 +157,23 @@ def update_data() -> None:
             state_sheet.write(state_row, 1, state_data.iloc[i, 1], text_wrap)
             if i != 0:
                 if str(state_data.iloc[i, 2]) != "nan" and str(state_data.iloc[i - 1, 2]) != "nan":
-                    state_sheet.write(state_row, 2, str(int(state_data.iloc[i, 2]) - int(state_data.iloc[i - 1, 2])), text_wrap)
+                    state_sheet.write(state_row, 2, str(int(state_data.iloc[i, 2]) - int(state_data.iloc[i - 1, 2])),
+                                      text_wrap)
                 elif str(state_data.iloc[i, 2]) != "nan":
                     state_sheet.write(state_row, 2, str(state_data.iloc[i, 2]), text_wrap)
                 if str(state_data.iloc[i, 3]) != "nan" and str(state_data.iloc[i - 1, 3]) != "nan":
-                    state_sheet.write(state_row, 3, str(int(state_data.iloc[i, 3]) - int(state_data.iloc[i - 1, 3])), text_wrap)
+                    state_sheet.write(state_row, 3, str(int(state_data.iloc[i, 3]) - int(state_data.iloc[i - 1, 3])),
+                                      text_wrap)
                 elif str(state_data.iloc[i, 3]) != "nan":
                     state_sheet.write(state_row, 3, str(state_data.iloc[i, 3]), text_wrap)
                 if str(state_data.iloc[i, 4]) != "nan" and str(state_data.iloc[i - 1, 4]) != "nan":
-                    state_sheet.write(state_row, 4, str(int(state_data.iloc[i, 4]) - int(state_data.iloc[i - 1, 4])), text_wrap)
+                    state_sheet.write(state_row, 4, str(int(state_data.iloc[i, 4]) - int(state_data.iloc[i - 1, 4])),
+                                      text_wrap)
                 elif str(state_data.iloc[i, 4]) != "nan":
                     state_sheet.write(state_row, 4, str(state_data.iloc[i, 4]), text_wrap)
                 if str(state_data.iloc[i, 5]) != "nan" and str(state_data.iloc[i - 1, 5]) != "nan":
-                    state_sheet.write(state_row, 5, str(int(state_data.iloc[i, 5]) - int(state_data.iloc[i - 1, 5])), text_wrap)
+                    state_sheet.write(state_row, 5, str(int(state_data.iloc[i, 5]) - int(state_data.iloc[i - 1, 5])),
+                                      text_wrap)
                 elif str(state_data.iloc[i, 5]) != "nan":
                     state_sheet.write(state_row, 5, str(state_data.iloc[i, 5]), text_wrap)
             else:
@@ -199,19 +225,27 @@ def update_data() -> None:
                     new_sheet.write(row, 2, district_data.iloc[i, 2], text_wrap)
                     if i != 0:
                         if str(district_data.iloc[i, 3]) != "nan" and str(district_data.iloc[i - 1, 3]) != "nan":
-                            new_sheet.write(row, 3, str(int(district_data.iloc[i, 3]) - int(district_data.iloc[i - 1, 3])), text_wrap)
+                            new_sheet.write(row, 3, str(int(district_data.iloc[i, 3]) - int(district_data.iloc[i - 1,
+                                                                                                               3])),
+                                            text_wrap)
                         elif str(district_data.iloc[i, 3]) != "nan":
                             new_sheet.write(row, 3, str(district_data.iloc[i, 3]), text_wrap)
                         if str(district_data.iloc[i, 4]) != "nan" and str(district_data.iloc[i - 1, 4]) != "nan":
-                            new_sheet.write(row, 4, str(int(district_data.iloc[i, 4]) - int(district_data.iloc[i - 1, 4])), text_wrap)
+                            new_sheet.write(row, 4, str(int(district_data.iloc[i, 4]) - int(district_data.iloc[i - 1,
+                                                                                                               4])),
+                                            text_wrap)
                         elif str(district_data.iloc[i, 4]) != "nan":
                             new_sheet.write(row, 4, str(district_data.iloc[i, 4]), text_wrap)
                         if str(district_data.iloc[i, 5]) != "nan" and str(district_data.iloc[i - 1, 5]) != "nan":
-                            new_sheet.write(row, 5, str(int(district_data.iloc[i, 5]) - int(district_data.iloc[i - 1, 5])), text_wrap)
+                            new_sheet.write(row, 5, str(int(district_data.iloc[i, 5]) - int(district_data.iloc[i - 1,
+                                                                                                               5])),
+                                            text_wrap)
                         elif str(district_data.iloc[i, 5]) != "nan":
                             new_sheet.write(row, 5, str(district_data.iloc[i, 5]), text_wrap)
                         if str(district_data.iloc[i, 6]) != "nan" and str(district_data.iloc[i - 1, 6]) != "nan":
-                            new_sheet.write(row, 6, str(int(district_data.iloc[i, 6]) - int(district_data.iloc[i - 1, 6])), text_wrap)
+                            new_sheet.write(row, 6, str(int(district_data.iloc[i, 6]) - int(district_data.iloc[i - 1,
+                                                                                                               6])),
+                                            text_wrap)
                         elif str(district_data.iloc[i, 6]) != "nan":
                             new_sheet.write(row, 6, str(district_data.iloc[i, 6]), text_wrap)
                     else:
@@ -233,9 +267,10 @@ def update_data() -> None:
                         new_sheet.write(row, 10, str(district_data.iloc[i, 6]), text_wrap)
                     row += 1
         workbook.close()
+    print("[X] Data Retrieval Completed...")
 
 
-schedule.add_job(update_data, trigger="cron", day_of_week='mon-sun', hour=1, minute=26)
+schedule.add_job(update_data, trigger="cron", day_of_week='mon-sun', hour=22, minute=30, end_date='2060-12-31')
 schedule.start()
 
 
@@ -246,6 +281,13 @@ app = Flask(__name__)
 # Route 1 --> Home Route
 @app.route('/', methods=['GET', 'POST'])
 def home():
+    """
+    Home route.
+
+    This is home route.
+
+    :return: HTML page or excel file
+    """
     global states, unknowns
     if request.method == "GET":
         return render_template("home.html", data=states)
@@ -255,16 +297,31 @@ def home():
 
 @app.route("/about", methods=['GET'])
 def about():
+    """
+    About page.
+
+    :return: HTML page
+    """
     return render_template("about.html")
 
 
 @app.route("/contact", methods=['GET'])
 def contact():
+    """
+    Contact page.
+
+    :return: HTML page
+    """
     return render_template("contact.html")
 
 
 @app.errorhandler(404)
-def not_found(e):
+def not_found(_):
+    """
+    Page Not Found page.
+
+    :return: HTML page
+    """
     return render_template("404.html")
 
 
